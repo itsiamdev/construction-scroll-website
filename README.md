@@ -6,6 +6,10 @@ A scroll-driven construction company website for BIM Construct, a civil construc
 
 The website presents BIM Construct's services, selected projects, client testimonials and contact details through a visual, monochrome interface. The construction video is controlled by the visitor's scroll position, turning the build process into the main interaction on the page.
 
+## Live Demo
+
+View the live website at [itsiamdev.github.io/construction-scroll-website](https://itsiamdev.github.io/construction-scroll-website/).
+
 ## Features
 
 - Scroll-controlled construction video playback
