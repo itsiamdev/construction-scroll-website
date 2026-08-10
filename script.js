@@ -1,6 +1,7 @@
 const video = document.querySelector('#build-video');
 const progressBar = document.querySelector('#progress-bar');
 const videoTime = document.querySelector('#video-time');
+const videoSection = document.querySelector('.video-section');
 const revealItems = document.querySelectorAll('.reveal');
 let duration = 0;
 let targetTime = 0;
@@ -15,22 +16,35 @@ const formatTime = (seconds) => {
 };
 
 const updateVideoFromScroll = () => {
-  if (!duration) return;
-  const section = document.querySelector('.video-section');
-  const sectionTop = section.offsetTop;
-  const scrollableDistance = section.offsetHeight - window.innerHeight;
+  if (!videoSection) return;
+  if (!duration && Number.isFinite(video.duration)) duration = video.duration;
+
+  const sectionTop = videoSection.getBoundingClientRect().top + window.scrollY;
+  const scrollableDistance = Math.max(1, videoSection.offsetHeight - window.innerHeight);
   const progress = Math.min(1, Math.max(0, (window.scrollY - sectionTop) / scrollableDistance));
   targetTime = progress * duration;
   progressBar.style.width = `${progress * 100}%`;
   videoTime.textContent = formatTime(targetTime);
-  if (!frameRequest) frameRequest = requestAnimationFrame(syncVideo);
+  if (duration && video.readyState >= 1 && !frameRequest) frameRequest = requestAnimationFrame(syncVideo);
 };
 
-const syncVideo = () => { video.currentTime = targetTime; frameRequest = null; };
+const syncVideo = () => {
+  if (video.readyState >= 1 && Number.isFinite(targetTime)) video.currentTime = targetTime;
+  frameRequest = null;
+};
 
-video.addEventListener('loadedmetadata', () => { duration = video.duration; updateVideoFromScroll(); });
+const setVideoDuration = () => {
+  if (Number.isFinite(video.duration)) {
+    duration = video.duration;
+    updateVideoFromScroll();
+  }
+};
+
+video.addEventListener('loadedmetadata', setVideoDuration);
+video.addEventListener('durationchange', setVideoDuration);
 window.addEventListener('scroll', updateVideoFromScroll, { passive: true });
 window.addEventListener('resize', updateVideoFromScroll);
+updateVideoFromScroll();
 
 const observer = new IntersectionObserver((entries) => { entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } }); }, { threshold: 0.12 });
 revealItems.forEach((item) => observer.observe(item));
